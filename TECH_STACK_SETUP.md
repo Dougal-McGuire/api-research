@@ -38,7 +38,7 @@ Before starting, ensure you have:
 
 **User Instructions:** 
 1. Navigate to your empty project folder
-2. Create a `.env` file with your GitHub token: `GITHUB_TOKEN=your_github_token_here`
+2. Create a `.env` file with your GitHub token: `GH_TOKEN=your_github_token_here`
 3. Ask Claude to execute the setup process using the instructions below
 
 **Claude Instructions:**
@@ -595,7 +595,7 @@ export default HomePage
 #### Create `.env.example`:
 ```
 # GitHub Personal Access Token for repository creation
-GITHUB_TOKEN=your_github_token_here
+GH_TOKEN=your_github_token_here
 
 # Optional: Other environment variables
 # NODE_ENV=development
@@ -750,8 +750,8 @@ git init
 git add .
 git commit -m "Initial commit: Setup $PROJECT_NAME with modern web app tech stack"
 
-# Create GitHub repository if GITHUB_TOKEN is available
-if [ -n "$GITHUB_TOKEN" ]; then
+# Create GitHub repository if GH_TOKEN is available
+if [ -n "$GH_TOKEN" ]; then
     gh repo create "$PROJECT_NAME" --public --source=. --remote=origin --push
 fi
 ```
@@ -808,7 +808,7 @@ docker-compose -f docker-compose.dev.yml up
 ## Usage Summary
 
 **User Instructions:**
-1. Create a `.env` file with `GITHUB_TOKEN=your_token_here`
+1. Create a `.env` file with `GH_TOKEN=your_token_here`
 2. Ask Claude to execute the setup process step by step
 3. Claude will create the complete project structure and configuration
 4. Start development with `docker-compose -f docker-compose.dev.yml up`

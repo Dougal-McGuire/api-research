@@ -6,7 +6,7 @@ on:
     tags: [ "v*" ]
 
 env:
-  PROJECT_ID: api-research
+  PROJECT_ID: api-research-202507091324
   SERVICE_NAME: api-research
   REGION: europe-west1
 
