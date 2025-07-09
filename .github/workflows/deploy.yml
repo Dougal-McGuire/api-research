@@ -38,10 +38,12 @@ jobs:
         cd frontend
         npm run build
         
-    - name: Copy frontend build to static directory
+    - name: Verify frontend build output
       run: |
-        rm -rf static/*
-        cp -r frontend/dist/* static/
+        echo "✅ Frontend build completed successfully"
+        echo "Checking static directory contents:"
+        ls -la static/
+        echo "Frontend files ready for Docker build"
 
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v2
