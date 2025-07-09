@@ -37,6 +37,11 @@ jobs:
       run: |
         cd frontend
         npm run build
+        
+    - name: Copy frontend build to static directory
+      run: |
+        rm -rf static/*
+        cp -r frontend/dist/* static/
 
     - name: Setup Google Cloud CLI
       uses: google-github-actions/setup-gcloud@v2
