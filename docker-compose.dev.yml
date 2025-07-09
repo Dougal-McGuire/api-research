@@ -1,10 +1,12 @@
+name: api-research
+
 services:
   web:
     build:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "8000:8000"
+      - "0.0.0.0:8000:8000"
     volumes:
       - ./app:/app/app
       - ./static:/app/static
@@ -24,7 +26,7 @@ services:
     image: node:20-alpine
     working_dir: /app
     ports:
-      - "5173:5173"
+      - "0.0.0.0:5173:5173"
     volumes:
       - ./frontend:/app
       - ./static:/app/dist
