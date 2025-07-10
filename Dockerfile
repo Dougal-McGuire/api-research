@@ -7,7 +7,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY static ./static
-COPY templates ./templates
+
+# Create templates directory if it doesn't exist
+RUN mkdir -p templates
 
 EXPOSE 8000
 
