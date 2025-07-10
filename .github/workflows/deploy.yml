@@ -56,8 +56,16 @@ jobs:
         else
           echo "✅ GCP_SA_KEY secret is accessible"
         fi
+        
+        if [ -z "$OPENAI_API_KEY" ]; then
+          echo "❌ OPENAI_API_KEY secret is not accessible"
+          exit 1
+        else
+          echo "✅ OPENAI_API_KEY secret is accessible"
+        fi
       env:
         GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
@@ -87,6 +95,7 @@ jobs:
           --memory 512Mi \
           --cpu 1 \
           --max-instances 10 \
+          --set-env-vars OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
           --quiet
 
     - name: Show service URL
