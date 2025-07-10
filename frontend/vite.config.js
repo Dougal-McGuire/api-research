@@ -5,7 +5,7 @@ export default defineConfig({
     base: '/',
     build: {
         outDir: '../static',
-        emptyOutDir: true,
+        emptyOutDir: false, // Don't empty static dir to preserve downloaded files
     },
     server: {
         proxy: {

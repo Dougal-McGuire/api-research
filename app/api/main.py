@@ -1,6 +1,10 @@
 from fastapi import APIRouter
+from .research import router as research_router
 
 router = APIRouter()
+
+# Include research endpoints
+router.include_router(research_router, prefix="/research", tags=["research"])
 
 @router.get("/")
 async def api_root():

@@ -12,6 +12,8 @@ services:
       - ./static:/app/static
       - ./templates:/app/templates
       - ./requirements-dev.txt:/app/requirements-dev.txt
+    env_file:
+      - .env
     environment:
       - ENV=development
       - PYTHONPATH=/app

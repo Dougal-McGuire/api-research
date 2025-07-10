@@ -1,0 +1,75 @@
+# SYSTEM
+You can browse the web with the `web` tool.  
+Always cite every web.run source you use.  
+When you locate a PDF, prefer the direct file‑URL over the landing page URL.  
+Summaries must be factual, concise, and traceable to citations.
+
+# USER
+════════════════════════════════════════════════════════════════════
+TASK – Retrieve complete regulatory intelligence for **{substance_name}**  
+════════════════════════════════════════════════════════════════════
+
+Search **comprehensively** in the four mandatory sources below, checking both
+the base compound and common salt forms (e.g. “metformin” *and* “metformin
+hydrochloride”).
+
+| Source | Primary URL |
+|--------|-------------|
+| **1. EPAR** | https://www.ema.europa.eu/en/search?f%5B0%5D=ema_medicine_bundle%3Aema_medicine&f%5B1%5D=ema_search_categories%3A83 |
+| **2. EMA‑PSBG** | https://www.ema.europa.eu/en/human-regulatory-overview/research-development/scientific-guidelines/clinical-pharmacology-pharmacokinetics/product-specific-bioequivalence-guidance |
+| **3. FDA Approvals (DAF)** | https://www.accessdata.fda.gov/scripts/cder/daf/ |
+| **4. FDA‑PSBG (PSG)** | https://www.accessdata.fda.gov/scripts/cder/psg/index.cfm |
+
+--------------------------------------------------------------------
+### SPECIAL NAVIGATION RULES – EMA‑PSBG
+1. **Try the direct slug first**  
+   `https://www.ema.europa.eu/en/{substance_name}-product-specific-bioequivalence-guidance`
+   (lower‑case, spaces → “‑”).  
+2. If that fails (404 or blank), run a scoped search query such as  
+   `"{substance_name} product-specific bioequivalence guidance site:ema.europa.eu pdf"`.  
+3. If still not found, open the compilation PDF  
+   `https://www.ema.europa.eu/en/documents/other/compilation-individual-product-specific-bioequivalence-guidance_en.pdf`
+   and search **inside** it.  
+4. When guidance exists, open the *English (EN)* PDF, capture the **Last updated** / **Revision** date, and summarise the study‑design requirements:
+
+   * study type (single‑dose / multiple‑dose, crossover / parallel)  
+   * reference & test strength(s) and fed/fasted condition  
+   * required PK metrics and acceptance limits (e.g. 90 % CI 80‑125 %)  
+   * biowaiver or additional studies (if any)  
+   * any special analytical or metabolite requirements  
+
+--------------------------------------------------------------------
+### SPECIAL NAVIGATION RULES – FDA‑PSBG
+* Search by both base and salt names; list every PSG hit separately and note the salt form in the title.
+
+--------------------------------------------------------------------
+### OUTPUT FORMAT  (use exact headings)
+1. **EPAR**  
+   • List all relevant medicines containing {substance_name}.  
+   • For each: authorisation date, current status, and direct PDF links (EPAR summary & assessment report).
+
+2. **EMA Product‑Specific Bioequivalence Guidance (PSBG)**  
+   • “No PSBG found” **or**  
+   • PDF link, last updated/revision date, five‑bullet study‑design synopsis (see above).
+
+3. **FDA – Drugs@FDA Approvals**  
+   • NDA/ANDA numbers, initial approval date, dosage forms & strengths, marketing status.  
+   • Direct links to approval letters and labeling PDFs.
+
+4. **FDA Product‑Specific Guidance (PSG)**  
+   • For each PSG: PDF link, issue date, salt form, and study recommendations (fasted/fed, metrics, waiver notes).  
+   • If none, state this explicitly.
+
+5. **Key Regulatory Information & Clinical Trials**  
+   • Summarise notable regulatory milestones, orphan designations, safety warnings, etc.  
+   • For pivotal trials: NCT number, phase, primary endpoint, headline outcome.
+
+--------------------------------------------------------------------
+### CRITICAL REQUIREMENTS
+✓ Include **all** source URLs (PDFs or HTML) for verification.  
+✓ Cite every fact with the appropriate web.run reference ID.  
+✓ If a document is not found after all steps, state that explicitly.  
+✓ Present information in clear prose or short bullet lists—avoid large tables unless essential.
+
+--------------------------------------------------------------------
+BEGIN.  Substance = “{substance_name}”
