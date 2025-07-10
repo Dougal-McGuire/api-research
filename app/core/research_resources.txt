@@ -1,4 +1,0 @@
-EPAR;https://www.ema.europa.eu/en/search?f%5B0%5D=ema_medicine_bundle%3Aema_medicine&f%5B1%5D=ema_search_categories%3A83
-EMA-PSBG;https://www.ema.europa.eu/en/human-regulatory-overview/research-development/scientific-guidelines/clinical-pharmacology-pharmacokinetics/product-specific-bioequivalence-guidance
-FDA-Approvals;https://www.accessdata.fda.gov/scripts/cder/daf/
-FDA-PSBG;https://www.accessdata.fda.gov/scripts/cder/psg/index.cfm
