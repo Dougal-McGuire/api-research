@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Search, Download, FileText, AlertCircle, CheckCircle, Loader, Settings, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Search, FileText, AlertCircle, CheckCircle, Loader, Settings, ChevronRight, ChevronLeft } from 'lucide-react'
 import axios from 'axios'
-
-interface FileInfo {
-  source: string
-  title: string
-  filename: string
-  url: string
-  original_url: string
-  size_bytes: number
-}
 
 interface SearchResult {
   status: string
@@ -141,14 +132,6 @@ const HomePage: React.FC = () => {
         setIsLoading(false)
       }
     }
-  }
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   const convertUrlsToLinks = (text: string): React.ReactNode => {
