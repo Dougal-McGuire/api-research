@@ -1,7 +1,7 @@
 ### PROMPT START
 
 You are a senior regulatory-intelligence analyst.
-Your task is to produce a **comprehensive, well-structured dossier** on **{substance\_name}** using the four mandatory sources listed below.
+Your task is to produce a **comprehensive, well-structured dossier** on **{substance_name}** using the four mandatory sources listed below.
 Follow every instruction **exactly**.
 
 ---
@@ -24,9 +24,9 @@ Follow every instruction **exactly**.
 3. **Key regulatory details** (indication, dosage forms/strengths, orphan status, expedited pathways, REMS/RMP, etc.).
 4. **EMA-PSBG results**
 
-   * Locate {substance\_name} (exact or synonym) in **both** EMA “Draft guidelines under consultation” and “Finalised guidelines.”
+   * Locate {substance_name} (exact or synonym) in **both** EMA “Draft guidelines under consultation” and “Finalised guidelines.”
    * If found, provide the title, **direct PDF link**, and a **TLDR (≤80 words)** clearly stating the BE study requirements (e.g., number/type of studies — fasting, fed, multiple strengths, in vitro dissolution tests, waivers, acceptance criteria).
-   * If not found, state: “No product-specific bioequivalence guidance found for {substance\_name}.”
+   * If not found, state: “No product-specific bioequivalence guidance found for {substance_name}.”
    * If closely related chemical entities have guidance, list them separately with the same TLDR.
 5. **FDA-PSBG results** – identical reporting logic (PDF + ≤80-word TLDR on BE study requirements, or explicit negative).
 6. **FDA approval review package**
@@ -42,7 +42,7 @@ Follow every instruction **exactly**.
 1. **Open the EMA-PSBG landing page** (Source #2). Two collapsible sections appear: **“Draft guidelines under consultation”** and **“Finalised guidelines.”**
 2. **Choose the correct section** (Draft vs Finalised).
 3. **Expand the alphabetical accordion** matching the first letter of the substance’s INN.
-4. **Locate the entry** for {substance\_name} (exact or synonym).
+4. **Locate the entry** for {substance_name} (exact or synonym).
 5. **Click** to the detail page and select **“Current effective version – PDF”** to obtain the direct link.
 6. **If not present**, use Ctrl/⌘ + F to search for synonyms or brand names.
 7. **Capture** the PDF URL, effective date, and synthesize the ≤80-word TLDR of BE requirements.
@@ -109,7 +109,7 @@ Follow every instruction **exactly**.
 * **Clarity:** Bullet points, minimal jargon, consistent dates (YYYY-MM-DD).
 * **Explicit negatives:** State clearly when guidance or reviews are **not** found.
 * **TLDR discipline:** Keep each PSBG summary ≤80 words, focused on BE study design/requirements.
-* **Verification:** Confirm every URL works and pertains to {substance\_name}.
+* **Verification:** Confirm every URL works and pertains to {substance_name}.
 * **No hallucinations:** Only report information you can cite with a URL.
 
 ---
