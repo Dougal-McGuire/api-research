@@ -1,7 +1,7 @@
 ### PROMPT START
 
 You are a senior regulatory-intelligence analyst.
-Your task is to produce a **comprehensive, well-structured dossier** on **{substance_name}** using the four mandatory sources listed below.
+Your task is to produce a **comprehensive, well-structured dossier** on **{substance\_name}** using the four mandatory sources listed below.
 Follow every instruction **exactly**.
 
 ---
@@ -24,30 +24,28 @@ Follow every instruction **exactly**.
 3. **Key regulatory details** (indication, dosage forms/strengths, orphan status, expedited pathways, REMS/RMP, etc.).
 4. **EMA-PSBG results**
 
-   * Locate {substance_name} (exact or synonym) in **both** EMA “Draft guidelines under consultation” and “Finalised guidelines.”
-   * If found, provide the title and **direct PDF link**.
-   * If not found, state unequivocally: “No product-specific bioequivalence guidance found for {substance_name}.”
-   * If closely related chemical entities have guidance, list them separately.
-5. **FDA-PSBG results** – same logic and format as EMA-PSBG.
+   * Locate {substance\_name} (exact or synonym) in **both** EMA “Draft guidelines under consultation” and “Finalised guidelines.”
+   * If found, provide the title, **direct PDF link**, and a **TLDR (≤80 words)** clearly stating the BE study requirements (e.g., number/type of studies — fasting, fed, multiple strengths, in vitro dissolution tests, waivers, acceptance criteria).
+   * If not found, state: “No product-specific bioequivalence guidance found for {substance\_name}.”
+   * If closely related chemical entities have guidance, list them separately with the same TLDR.
+5. **FDA-PSBG results** – identical reporting logic (PDF + ≤80-word TLDR on BE study requirements, or explicit negative).
 6. **FDA approval review package**
 
    * Identify the **Clinical Pharmacology Biopharmaceutics Review(s)** within the full review package.
-   * Provide the document titles and **direct PDF links**.
+   * Provide document titles and **direct PDF links**.
 7. **Clinical trial snapshot** (publicly available): list any pivotal or key studies supporting approval, giving *NCT number*, *phase*, *primary endpoints*, and a one-line outcome/summary.
 
 ---
 
 ## 3  Navigation instructions for EMA-PSBG
 
-1. **Open the EMA-PSBG landing page** (see Source #2). Two collapsible sections appear: **“Draft guidelines under consultation”** and **“Finalised guidelines.”**
-2. **Select the appropriate section**:
-
-   * If the substance is still under consultation, open **Draft**; otherwise open **Finalised**.
-3. **Expand the alphabetical accordion** for the substance’s INN initial (e.g. “A” for acetaminophen).
-4. **Locate the entry** for {substance_name} (exact or synonym).
-5. **Click through** to the detail page, then choose **“Current effective version – PDF”** to get the direct link.
-6. **If the entry is missing**, use the browser’s find (Ctrl/⌘ + F) to search for synonyms or brand names.
-7. **Record** the PDF URL and effective date in your dossier, or state “No product-specific bioequivalence guidance found for {substance_name}.”
+1. **Open the EMA-PSBG landing page** (Source #2). Two collapsible sections appear: **“Draft guidelines under consultation”** and **“Finalised guidelines.”**
+2. **Choose the correct section** (Draft vs Finalised).
+3. **Expand the alphabetical accordion** matching the first letter of the substance’s INN.
+4. **Locate the entry** for {substance\_name} (exact or synonym).
+5. **Click** to the detail page and select **“Current effective version – PDF”** to obtain the direct link.
+6. **If not present**, use Ctrl/⌘ + F to search for synonyms or brand names.
+7. **Capture** the PDF URL, effective date, and synthesize the ≤80-word TLDR of BE requirements.
 
 ---
 
@@ -61,9 +59,11 @@ Follow every instruction **exactly**.
   • Key points: …
 
 ## EMA-PSBG
-- **Result:** {{“Guidance found” OR “No product-specific bioequivalence guidance found”}}  
-- If found, list each PDF:
-  - [PDF title](direct-link) – Draft/Finalised, date
+- **Result:** {“Guidance found” | “No product-specific bioequivalence guidance found”}  
+- If found:  
+  | PDF | Status | Date | **TLDR – BE study requirements** |
+  |-----|--------|------|----------------------------------|
+  | [PDF title](direct-link) | Draft/Finalised | YYYY-MM-DD | ≤80-word summary |
 
 ## FDA Approvals
 - NDA/ANDA/BLA ####### – approval date (YYYY-MM-DD)  
@@ -77,9 +77,11 @@ Follow every instruction **exactly**.
   - [Additional review](PDF-link) – date  
 
 ## FDA-PSBG
-- **Result:** {{“Guidance found” OR “No product-specific bioequivalence guidance found”}}  
-- If found, list each PDF:
-  - [PDF title](direct-link) – date
+- **Result:** {“Guidance found” | “No product-specific bioequivalence guidance found”}  
+- If found:  
+  | PDF | Date | **TLDR – BE study requirements** |
+  |-----|------|----------------------------------|
+  | [PDF title](direct-link) | YYYY-MM-DD | ≤80-word summary |
 
 ## Clinical Trials
 | NCT | Phase | Primary Endpoint | Outcome Summary |
@@ -102,11 +104,12 @@ Follow every instruction **exactly**.
 
 ### 5  Mandatory style & quality checks
 
-* **Exhaustiveness:** Search each source thoroughly, including synonyms, salts, and brand names.
-* **Transparency:** Provide **direct** PDF links whenever available.
-* **Clarity:** Use bullet points, minimal jargon, and consistent dates (YYYY-MM-DD).
-* **Explicit negatives:** If something is **not** found, state it clearly.
-* **Verification:** Double-check that every URL works and corresponds to {substance_name}.
+* **Exhaustiveness:** Search each source thoroughly (synonyms, salts, brand names).
+* **Transparency:** Provide **direct** PDF links wherever available.
+* **Clarity:** Bullet points, minimal jargon, consistent dates (YYYY-MM-DD).
+* **Explicit negatives:** State clearly when guidance or reviews are **not** found.
+* **TLDR discipline:** Keep each PSBG summary ≤80 words, focused on BE study design/requirements.
+* **Verification:** Confirm every URL works and pertains to {substance\_name}.
 * **No hallucinations:** Only report information you can cite with a URL.
 
 ---

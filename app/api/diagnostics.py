@@ -59,25 +59,38 @@ async def health_check_page():
     return HTMLResponse(content=html_content)
 
 async def test_openai_connection():
-    """Test basic OpenAI API connection"""
+    """Test basic OpenAI API connection with timeout"""
     try:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             return {"status": "error", "message": "OPENAI_API_KEY not set"}
         
-        client = OpenAI(api_key=api_key)
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": "Hello"}],
-            max_tokens=5
-        )
-        
-        return {
-            "status": "success",
-            "message": "OpenAI API connection successful",
-            "response": response.choices[0].message.content,
-            "model_used": "gpt-3.5-turbo"
-        }
+        # Test with timeout
+        try:
+            async def openai_test():
+                client = OpenAI(api_key=api_key)
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": "Hello"}],
+                    max_tokens=5
+                )
+                return response.choices[0].message.content
+            
+            # 10 second timeout
+            response_content = await asyncio.wait_for(openai_test(), timeout=10.0)
+            
+            return {
+                "status": "success",
+                "message": "OpenAI API connection successful",
+                "response": response_content,
+                "model_used": "gpt-3.5-turbo"
+            }
+        except asyncio.TimeoutError:
+            return {
+                "status": "error",
+                "message": "OpenAI API connection timed out (10s)",
+                "error_type": "TimeoutError"
+            }
     except Exception as e:
         return {
             "status": "error",
@@ -86,16 +99,27 @@ async def test_openai_connection():
         }
 
 async def test_service_initialization():
-    """Test research service initialization"""
+    """Test research service initialization with timeout"""
     try:
-        service = OpenAIResearchService()
-        template = service._load_prompt_template()
+        async def service_test():
+            service = OpenAIResearchService()
+            template = service._load_prompt_template()
+            return template
+        
+        # 5 second timeout
+        template = await asyncio.wait_for(service_test(), timeout=5.0)
         
         return {
             "status": "success",
             "message": "Research service initialized successfully",
             "template_length": len(template),
             "template_preview": template[:200] + "..." if len(template) > 200 else template
+        }
+    except asyncio.TimeoutError:
+        return {
+            "status": "error",
+            "message": "Service initialization timed out (5s)",
+            "error_type": "TimeoutError"
         }
     except Exception as e:
         return {
@@ -108,13 +132,22 @@ async def test_models_endpoint():
     """Test models endpoint functionality"""
     try:
         from app.api.research import get_available_models
-        models = await get_available_models()
+        models_response = await get_available_models()
+        
+        # Handle both direct list and ModelsResponse object
+        if hasattr(models_response, 'models'):
+            models_list = models_response.models
+        elif isinstance(models_response, dict) and 'models' in models_response:
+            models_list = models_response['models']
+        else:
+            models_list = models_response
         
         return {
             "status": "success",
-            "message": f"Models endpoint working, {len(models.models)} models available",
-            "models_count": len(models.models),
-            "models": [{"id": m.id, "name": m.name} for m in models.models]
+            "message": f"Models endpoint working, {len(models_list)} models available",
+            "models_count": len(models_list),
+            "models": [{"id": m.id if hasattr(m, 'id') else m['id'], 
+                       "name": m.name if hasattr(m, 'name') else m['name']} for m in models_list]
         }
     except Exception as e:
         return {
@@ -163,20 +196,32 @@ def generate_health_check_html(health_data: Dict) -> str:
         color = "green" if status == "success" else "red" if status == "error" else "orange"
         return f'<span style="background-color: {color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{status.upper()}</span>'
     
+    def generate_models_list(models_data: Dict) -> str:
+        if models_data.get('models'):
+            models_html = '<p><strong>Available Models:</strong></p><ul>'
+            for model in models_data['models']:
+                models_html += f'<li>{model["name"]} ({model["id"]})</li>'
+            models_html += '</ul>'
+            return models_html
+        return ''
+    
     def format_dict(data: Dict, indent: int = 0) -> str:
         html = ""
+        indent_str = "  " * indent
+        indent_str_plus = "  " * (indent + 1)
+        
         for key, value in data.items():
             if isinstance(value, dict):
-                html += f"{'  ' * indent}<strong>{key}:</strong><br>"
+                html += f"{indent_str}<strong>{key}:</strong><br>"
                 html += format_dict(value, indent + 1)
             elif isinstance(value, list):
-                html += f"{'  ' * indent}<strong>{key}:</strong><br>"
+                html += f"{indent_str}<strong>{key}:</strong><br>"
                 for item in value[:10]:  # Limit to first 10 items
-                    html += f"{'  ' * (indent + 1)}- {item}<br>"
+                    html += f"{indent_str_plus}- {item}<br>"
                 if len(value) > 10:
-                    html += f"{'  ' * (indent + 1)}... and {len(value) - 10} more<br>"
+                    html += f"{indent_str_plus}... and {len(value) - 10} more<br>"
             else:
-                html += f"{'  ' * indent}<strong>{key}:</strong> {value}<br>"
+                html += f"{indent_str}<strong>{key}:</strong> {value}<br>"
         return html
     
     html_content = f"""
@@ -220,7 +265,7 @@ def generate_health_check_html(health_data: Dict) -> str:
             <div class="section {health_data['models_endpoint']['status']}">
                 <h2>🤖 Models Endpoint {status_badge(health_data['models_endpoint']['status'])}</h2>
                 <p><strong>Message:</strong> {health_data['models_endpoint']['message']}</p>
-                {f"<p><strong>Available Models:</strong></p><ul>{''.join([f'<li>{m[\"name\"]} ({m[\"id\"]})</li>' for m in health_data['models_endpoint'].get('models', [])])}</ul>" if health_data['models_endpoint']['status'] == 'success' else ''}
+                {generate_models_list(health_data['models_endpoint']) if health_data['models_endpoint']['status'] == 'success' else ''}
             </div>
             
             <div class="section info">
