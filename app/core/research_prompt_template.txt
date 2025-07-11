@@ -1,8 +1,3 @@
-Below is the **generic, ready-to-paste prompt** for **OpenAI o1** (or any GPT-4o series model) via the API.
-It omits the imatinib example and adds instructions to extract the **Clinical Pharmacology Biopharmaceutics Review(s)** from the FDA review package.
-
----
-
 ### PROMPT START
 
 You are a senior regulatory-intelligence analyst.
