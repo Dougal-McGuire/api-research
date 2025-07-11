@@ -109,6 +109,40 @@ async def test_openai_connection():
             "error_type": type(e).__name__
         }
 
+@router.post("/test-search")
+async def test_search_simple():
+    """
+    Test search with a simple prompt to isolate the issue
+    """
+    try:
+        from openai import OpenAI
+        api_key = os.getenv("OPENAI_API_KEY")
+        client = OpenAI(api_key=api_key)
+        
+        # Simple research prompt
+        simple_prompt = "Research the drug ibuprofen. Provide a brief summary of its regulatory status."
+        
+        logger.info("Starting simple test search")
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",  # Use faster model for testing
+            messages=[{"role": "user", "content": simple_prompt}],
+            max_tokens=500
+        )
+        
+        return {
+            "status": "success",
+            "substance": "ibuprofen",
+            "research_content": response.choices[0].message.content,
+            "model_used": "gpt-3.5-turbo"
+        }
+    except Exception as e:
+        logger.error(f"Error in test search: {e}", exc_info=True)
+        return {
+            "status": "error",
+            "message": f"Test search failed: {str(e)}",
+            "error_type": type(e).__name__
+        }
+
 @router.post("/search")
 async def search_pharmaceutical_documents(request: SearchRequest):
     """

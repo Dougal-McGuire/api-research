@@ -38,8 +38,8 @@ const HomePage: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [availableModels, setAvailableModels] = useState<Model[]>([])
   const [selectedModel, setSelectedModel] = useState(() => {
-    // Get saved model from localStorage or default to o1
-    return localStorage.getItem('selectedModel') || 'o1'
+    // Get saved model from localStorage or default to gpt-4
+    return localStorage.getItem('selectedModel') || 'gpt-4'
   })
   const [modelsLoading, setModelsLoading] = useState(true)
   const [rawOutput, setRawOutput] = useState(() => {
