@@ -78,6 +78,37 @@ async def health_check():
     
     return health_info
 
+@router.get("/test-openai")
+async def test_openai_connection():
+    """
+    Test OpenAI API connection
+    """
+    try:
+        from openai import OpenAI
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            return {"status": "error", "message": "OPENAI_API_KEY not set"}
+        
+        client = OpenAI(api_key=api_key)
+        # Simple test call
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "Hello"}],
+            max_tokens=5
+        )
+        
+        return {
+            "status": "success", 
+            "message": "OpenAI API connection successful",
+            "response": response.choices[0].message.content
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"OpenAI API connection failed: {str(e)}",
+            "error_type": type(e).__name__
+        }
+
 @router.post("/search")
 async def search_pharmaceutical_documents(request: SearchRequest):
     """
@@ -89,8 +120,12 @@ async def search_pharmaceutical_documents(request: SearchRequest):
     logger.info(f"Received research request for substance: {request.api_name}")
     
     try:
+        logger.info(f"Starting research for: {request.api_name}")
         service = await get_research_service()
+        logger.info(f"Service initialized successfully")
+        
         result = await service.research_substance(request.api_name, debug=request.debug, model=request.model)
+        logger.info(f"Research completed successfully")
         return result
         
     except Exception as e:
@@ -101,7 +136,12 @@ async def search_pharmaceutical_documents(request: SearchRequest):
             "debug_info": {
                 "working_directory": os.getcwd(),
                 "template_file_exists": os.path.exists("app/core/research_prompt_template.txt"),
-                "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY"))
+                "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY")),
+                "request_data": {
+                    "api_name": request.api_name,
+                    "model": request.model,
+                    "debug": request.debug
+                }
             }
         }
         raise HTTPException(status_code=500, detail=error_detail)

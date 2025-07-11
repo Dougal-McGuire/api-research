@@ -92,9 +92,10 @@ jobs:
           --region $REGION \
           --allow-unauthenticated \
           --port 8000 \
-          --memory 512Mi \
+          --memory 1Gi \
           --cpu 1 \
           --max-instances 10 \
+          --timeout 600 \
           --set-env-vars OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
           --quiet
 
