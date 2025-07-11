@@ -52,14 +52,14 @@ Follow every instruction **exactly**.
 ## 4  Output format (Markdown)
 
 ```
-# {substance_name} – Regulatory Dossier
+# {{substance_name}} – Regulatory Dossier
 
 ## EPAR (EMA)
 - [Document title](PDF-link) – type, version, date  
   • Key points: …
 
 ## EMA-PSBG
-- **Result:** {{“Guidance found” | “No product-specific bioequivalence guidance found”}  
+- **Result:** {{“Guidance found” | “No product-specific bioequivalence guidance found”}}
 - If found:  
   | PDF | Status | Date | **TLDR – BE study requirements** |
   |-----|--------|------|----------------------------------|
@@ -77,7 +77,7 @@ Follow every instruction **exactly**.
   - [Additional review](PDF-link) – date  
 
 ## FDA-PSBG
-- **Result:** {{“Guidance found” | “No product-specific bioequivalence guidance found”}  
+- **Result:** {{“Guidance found” | “No product-specific bioequivalence guidance found”}}  
 - If found:  
   | PDF | Date | **TLDR – BE study requirements** |
   |-----|------|----------------------------------|
