@@ -16,15 +16,16 @@ class FileInfo(BaseModel):
 
 class SearchResponse(BaseModel):
     status: str
-    api: str
-    api_slug: Optional[str] = None
+    substance: Optional[str] = None
+    research_content: Optional[str] = None
+    prompt_used: Optional[str] = None
+    model_used: Optional[str] = None
     message: Optional[str] = None
-    total_found: Optional[int] = None
-    total_relevant: Optional[int] = None
-    total_downloaded: Optional[int] = None
-    hits: List[FileInfo] = []
-    download_all_url: Optional[str] = None
     debug_info: Optional[dict] = None
+    api_slug: Optional[str] = None
+    pdf_summary_url: Optional[str] = None
+    download_all_url: Optional[str] = None
+    downloaded_files: List[dict] = []
 
 class FilesListResponse(BaseModel):
     api_slug: str

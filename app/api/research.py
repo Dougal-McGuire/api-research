@@ -73,10 +73,10 @@ async def get_api_files(api_slug: str):
 @router.get("/{api_slug}/download-all")
 async def download_all_files(api_slug: str):
     """
-    Download all files for an API as a ZIP archive
+    Download all files for an API as a ZIP archive including summary report
     """
     try:
-        static_dir = "static"
+        static_dir = "static/apis"
         download_dir = os.path.join(static_dir, api_slug)
         
         if not os.path.exists(download_dir):
@@ -89,13 +89,14 @@ async def download_all_files(api_slug: str):
             raise HTTPException(status_code=404, detail="No PDF files found for this API")
         
         # Create ZIP file in memory
-        zip_filename = f"{api_slug}_documents.zip"
+        zip_filename = f"{api_slug}_complete_research_package.zip"
         
         def generate_zip():
             with tempfile.NamedTemporaryFile() as tmp_file:
                 with zipfile.ZipFile(tmp_file, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for pdf_file in pdf_files:
                         file_path = os.path.join(download_dir, pdf_file)
+                        # Use original filename in ZIP
                         zip_file.write(file_path, pdf_file)
                 
                 tmp_file.seek(0)

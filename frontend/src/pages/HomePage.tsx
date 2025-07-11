@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Search, FileText, AlertCircle, CheckCircle, Loader, Settings, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Search, FileText, AlertCircle, CheckCircle, Loader, Settings, ChevronRight, ChevronLeft, Download, Archive } from 'lucide-react'
 import axios from 'axios'
 
 interface SearchResult {
@@ -10,6 +10,16 @@ interface SearchResult {
   model_used?: string
   message?: string
   debug_info?: any
+  api_slug?: string
+  pdf_summary_url?: string
+  download_all_url?: string
+  downloaded_files?: Array<{
+    title: string
+    filename: string
+    source: string
+    download_date: string
+    local_path: string
+  }>
 }
 
 interface Model {
@@ -23,7 +33,7 @@ const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [debugMode, setDebugMode] = useState(true)
+  const [debugMode, setDebugMode] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [availableModels, setAvailableModels] = useState<Model[]>([])
@@ -32,6 +42,10 @@ const HomePage: React.FC = () => {
     return localStorage.getItem('selectedModel') || 'o1'
   })
   const [modelsLoading, setModelsLoading] = useState(true)
+  const [rawOutput, setRawOutput] = useState(() => {
+    // Get saved raw output preference from localStorage
+    return localStorage.getItem('rawOutput') === 'true'
+  })
 
   // Fetch available models on component mount
   useEffect(() => {
@@ -59,6 +73,228 @@ const HomePage: React.FC = () => {
     localStorage.setItem('selectedModel', selectedModel)
   }, [selectedModel])
 
+  // Save raw output preference to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('rawOutput', rawOutput.toString())
+  }, [rawOutput])
+
+  const convertContentToHTML = (text: string): React.ReactNode => {
+    if (!text) return null;
+    
+    // First, remove web.run citations and [web reference] markers
+    let cleanedText = text;
+    
+    // Remove web.run citations like: Citation: web.run("url")
+    cleanedText = cleanedText.replace(/Citation:\s*web\.run\([^)]+\)/g, '');
+    
+    // Remove [web reference #X] markers
+    cleanedText = cleanedText.replace(/\[web reference #\d+\]/g, '');
+    
+    // Remove web.run references in text like [web.run#4]
+    cleanedText = cleanedText.replace(/\[web\.run#\d+\]/g, '');
+    
+    // Split by lines to preserve formatting
+    const lines = cleanedText.split('\n');
+    
+    // Process lines to identify and handle tables
+    const processedLines = [];
+    let inTable = false;
+    let tableRows = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      
+      // Check if this is a table line (contains |)
+      if (line.includes('|') && line.trim().startsWith('|')) {
+        if (!inTable) {
+          inTable = true;
+          tableRows = [];
+        }
+        tableRows.push(line);
+      } else {
+        // If we were in a table, process it
+        if (inTable) {
+          processedLines.push({ type: 'table', content: tableRows });
+          tableRows = [];
+          inTable = false;
+        }
+        
+        // Add the current line
+        if (line.trim() !== '' || (i > 0 && lines[i - 1].trim() !== '')) {
+          processedLines.push({ type: 'line', content: line });
+        }
+      }
+    }
+    
+    // Handle any remaining table
+    if (inTable && tableRows.length > 0) {
+      processedLines.push({ type: 'table', content: tableRows });
+    }
+    
+    return processedLines.map((item, itemIndex) => {
+      if (item.type === 'table') {
+        return renderTable(item.content, itemIndex);
+      }
+      
+      const line = item.content;
+      const lineIndex = itemIndex;
+      
+      // Check if line contains URLs
+      const urlRegex = /(https?:\/\/[^\s\n\r\t<>()]+)/g;
+      const parts = line.split(urlRegex);
+      
+      const processedLine = parts.map((part, partIndex) => {
+        if (part.match(urlRegex)) {
+          // Clean URL more thoroughly
+          let cleanUrl = part;
+          // Remove trailing punctuation and brackets
+          cleanUrl = cleanUrl.replace(/[.,;:!?)]+$/, '');
+          // Remove any remaining parentheses at the end
+          cleanUrl = cleanUrl.replace(/\)+$/, '');
+          
+          return (
+            <a
+              key={`${lineIndex}-${partIndex}`}
+              href={cleanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline break-words"
+            >
+              {cleanUrl}
+            </a>
+          );
+        }
+        
+        // Convert markdown-style formatting
+        let processedPart = part;
+        
+        // Bold text
+        processedPart = processedPart.replace(/\*\*([^*]+)\*\*/g, (match, p1) => {
+          return `<strong class="font-semibold">${p1}</strong>`;
+        });
+        
+        // Italic text
+        processedPart = processedPart.replace(/\*([^*]+)\*/g, (match, p1) => {
+          return `<em class="italic">${p1}</em>`;
+        });
+        
+        return (
+          <span 
+            key={`${lineIndex}-${partIndex}`}
+            dangerouslySetInnerHTML={{ __html: processedPart }}
+          />
+        );
+      });
+      
+      // Handle different line types
+      if (line.trim().startsWith('•') || line.trim().startsWith('–')) {
+        // Remove duplicate bullet points that might appear
+        const cleanLine = line.replace(/^[\s]*[•–]+[\s]*[•–]+[\s]*/, '• ');
+        const cleanProcessedLine = cleanLine.split(urlRegex).map((part, partIndex) => {
+          if (part.match(urlRegex)) {
+            let cleanUrl = part.replace(/[.,;:!?)]+$/, '').replace(/\)+$/, '');
+            return (
+              <a
+                key={`${lineIndex}-${partIndex}`}
+                href={cleanUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:text-blue-800 underline break-words"
+              >
+                {cleanUrl}
+              </a>
+            );
+          }
+          let processedPart = part;
+          processedPart = processedPart.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>');
+          processedPart = processedPart.replace(/\*([^*]+)\*/g, '<em class="italic">$1</em>');
+          return (
+            <span 
+              key={`${lineIndex}-${partIndex}`}
+              dangerouslySetInnerHTML={{ __html: processedPart }}
+            />
+          );
+        });
+        
+        return (
+          <li key={lineIndex} className="ml-6 mb-1 list-disc">
+            {cleanProcessedLine}
+          </li>
+        );
+      } else if (line.trim().match(/^\d+\./)) {
+        return (
+          <div key={lineIndex} className="mb-2 ml-2">
+            {processedLine}
+          </div>
+        );
+      } else if (line.trim() === '') {
+        return <br key={lineIndex} />;
+      } else if (line.trim().match(/^#{1,6}\s/)) {
+        // Handle markdown headers
+        const headerLevel = line.match(/^(#{1,6})\s/)[1].length;
+        const headerText = line.replace(/^#{1,6}\s/, '');
+        const HeaderTag = `h${Math.min(headerLevel + 1, 6)}` as any;
+        return (
+          <HeaderTag key={lineIndex} className={`font-semibold mt-4 mb-2 text-${7 - headerLevel}xl`}>
+            {headerText}
+          </HeaderTag>
+        );
+      } else {
+        return (
+          <div key={lineIndex} className="mb-1">
+            {processedLine}
+          </div>
+        );
+      }
+    }).filter(Boolean); // Remove null entries
+  };
+
+  const renderTable = (tableLines: string[], key: number) => {
+    if (tableLines.length === 0) return null;
+    
+    // Filter out separator lines (lines with only | - and spaces)
+    const contentLines = tableLines.filter(line => !line.match(/^\s*\|[\s\-\|]*\|\s*$/));
+    
+    if (contentLines.length === 0) return null;
+    
+    const [headerLine, ...bodyLines] = contentLines;
+    
+    // Parse header
+    const headers = headerLine.split('|').map(cell => cell.trim()).filter(cell => cell !== '');
+    
+    // Parse body rows
+    const rows = bodyLines.map(line => 
+      line.split('|').map(cell => cell.trim()).filter(cell => cell !== '')
+    );
+    
+    return (
+      <div key={key} className="my-4 overflow-x-auto">
+        <table className="min-w-full border-collapse border border-gray-300">
+          <thead>
+            <tr className="bg-gray-50">
+              {headers.map((header, index) => (
+                <th key={index} className="border border-gray-300 px-4 py-2 text-left font-semibold">
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, rowIndex) => (
+              <tr key={rowIndex} className="hover:bg-gray-50">
+                {row.map((cell, cellIndex) => (
+                  <td key={cellIndex} className="border border-gray-300 px-4 py-2">
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -72,8 +308,8 @@ const HomePage: React.FC = () => {
     setSearchResult(null)
     setStatusMessage('')
 
-    // Show dynamic status messages if debug mode is enabled
-    if (debugMode) {
+    // Show dynamic status messages during research
+    {
       const statusMessages = [
         'Initializing OpenAI research session...',
         'Loading research prompt template...',
@@ -116,46 +352,9 @@ const HomePage: React.FC = () => {
         setIsLoading(false)
         setTimeout(() => setStatusMessage(''), 2000) // Clear success message after 2 seconds
       }
-    } else {
-      // Non-debug mode - simple request
-      try {
-        const response = await axios.post('/api/research/search', {
-          api_name: searchQuery.trim(),
-          debug: debugMode,
-          model: selectedModel
-        })
-        
-        setSearchResult(response.data)
-      } catch (err: any) {
-        setError(err.response?.data?.detail || 'Search failed. Please try again.')
-      } finally {
-        setIsLoading(false)
-      }
     }
   }
 
-  const convertUrlsToLinks = (text: string): React.ReactNode => {
-    // Regular expression to match URLs
-    const urlRegex = /(https?:\/\/[^\s\n\r\t]+)/g;
-    const parts = text.split(urlRegex);
-    
-    return parts.map((part, index) => {
-      if (part.match(urlRegex)) {
-        return (
-          <a
-            key={index}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline break-all"
-          >
-            {part}
-          </a>
-        );
-      }
-      return part;
-    });
-  }
 
   return (
     <div className="py-12 relative">
@@ -165,7 +364,7 @@ const HomePage: React.FC = () => {
             Clinical Research Helper
           </h1>
           <p className="mt-3 max-w-2xl mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl">
-            Search and download regulatory documents for pharmaceutical active ingredients from major health authorities
+            AI-powered search across EMA EPAR, EMA-PSBG, FDA Approvals, and FDA-PSBG databases for comprehensive pharmaceutical regulatory intelligence
           </p>
         </div>
         
@@ -199,28 +398,13 @@ const HomePage: React.FC = () => {
           {/* Search Info */}
           <div className="mt-4 text-sm text-gray-600">
             <p>
-              We search regulatory documents from EMA, FDA, NICE, and Health Canada.
-              The AI system will automatically filter for relevant approval and assessment documents.
+              AI-powered comprehensive search across four mandatory regulatory sources: EMA EPAR (European Public Assessment Reports), EMA-PSBG (Product-Specific Bioequivalence Guidance), FDA Approvals (Drugs@FDA), and FDA-PSBG (Product-Specific Guidance).
             </p>
-            
-            {/* Debug Toggle */}
-            <div className="mt-3 flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="debug-mode"
-                checked={debugMode}
-                onChange={(e) => setDebugMode(e.target.checked)}
-                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-              />
-              <label htmlFor="debug-mode" className="text-sm text-gray-600">
-                Enable debug mode (show detailed search information)
-              </label>
-            </div>
           </div>
         </div>
 
-        {/* Dynamic Status Message (Debug Mode) */}
-        {debugMode && isLoading && statusMessage && (
+        {/* Dynamic Status Message */}
+        {isLoading && statusMessage && (
           <div className="mt-8 max-w-2xl mx-auto">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center space-x-3">
               <Loader className="h-5 w-5 text-blue-500 animate-spin" />
@@ -248,31 +432,9 @@ const HomePage: React.FC = () => {
         {/* Debug Information */}
         {debugMode && searchResult?.debug_info && (
           <div className="mt-8 max-w-4xl mx-auto">
-            <div className="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm">
+            <div className="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-xs overflow-auto max-h-96">
               <h3 className="text-white font-semibold mb-3">🐛 Debug Information</h3>
-              <div className="space-y-2">
-                <div><span className="text-gray-400">Substance searched:</span> {searchResult.debug_info.substance_searched}</div>
-                <div><span className="text-gray-400">Model used:</span> {searchResult.model_used}</div>
-                <div><span className="text-gray-400">Template file:</span> {searchResult.debug_info.template_file}</div>
-                <div><span className="text-gray-400">Template length:</span> {searchResult.debug_info.template_length} characters</div>
-                <div><span className="text-gray-400">Formatted prompt length:</span> {searchResult.debug_info.formatted_prompt_length} characters</div>
-                <div><span className="text-gray-400">Response length:</span> {searchResult.debug_info.response_length} characters</div>
-                
-                {searchResult.debug_info.actual_prompt_used && (
-                  <div className="mt-3">
-                    <span className="text-gray-400">Actual prompt used:</span>
-                    <div className="ml-4 mt-1 p-2 bg-gray-800 rounded text-xs max-h-60 overflow-y-auto">
-                      <pre className="whitespace-pre-wrap">{searchResult.debug_info.actual_prompt_used}</pre>
-                    </div>
-                  </div>
-                )}
-                
-                {searchResult.debug_info.error && (
-                  <div className="mt-3 text-red-400">
-                    <span className="text-gray-400">Error:</span> {searchResult.debug_info.error}
-                  </div>
-                )}
-              </div>
+              <pre className="whitespace-pre-wrap">{JSON.stringify(searchResult.debug_info, null, 2)}</pre>
             </div>
           </div>
         )}
@@ -280,7 +442,7 @@ const HomePage: React.FC = () => {
         {/* Search Results */}
         {searchResult && (
           <div className="mt-12 max-w-6xl mx-auto">
-            {searchResult.status === 'completed' && searchResult.research_content ? (
+            {(searchResult.status === 'completed' || searchResult.research_content) ? (
               <div className="card">
                 <div className="flex items-center space-x-3 mb-6">
                   <CheckCircle className="h-6 w-6 text-green-500" />
@@ -295,13 +457,23 @@ const HomePage: React.FC = () => {
                 </div>
 
                 {/* Research Content */}
-                <div className="prose prose-lg max-w-none">
-                  <div className="bg-white border border-gray-200 rounded-lg p-6">
-                    <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                      {convertUrlsToLinks(searchResult.research_content)}
+                {searchResult.research_content && (
+                  <div className="mt-6">
+                    <div className="bg-white border border-gray-200 rounded-lg p-6 overflow-hidden">
+                      <div className="max-h-[600px] overflow-y-auto">
+                        {rawOutput ? (
+                          <pre className="whitespace-pre-wrap text-sm text-gray-800 font-mono">
+                            {searchResult.research_content}
+                          </pre>
+                        ) : (
+                          <div className="prose prose-sm max-w-none">
+                            {convertContentToHTML(searchResult.research_content)}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Copy to Clipboard Button */}
                 <div className="mt-6 flex justify-end">
@@ -417,6 +589,80 @@ const HomePage: React.FC = () => {
               Show detailed search information and progress updates
             </p>
           </div>
+
+          {/* Raw Output Toggle */}
+          <div className="mb-6">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="sidebar-raw-output"
+                checked={rawOutput}
+                onChange={(e) => setRawOutput(e.target.checked)}
+                className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+              />
+              <label htmlFor="sidebar-raw-output" className="text-sm text-gray-700">
+                Raw LLM Output
+              </label>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">
+              Display unprocessed AI response without parsing or formatting
+            </p>
+          </div>
+
+          {/* Download Section */}
+          {searchResult && searchResult.status === 'completed' && (
+            <div className="mb-6 border-t border-gray-200 pt-6">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Downloads</h3>
+              
+              {/* Download PDF Summary */}
+              {searchResult.pdf_summary_url && (
+                <div className="mb-3">
+                  <a
+                    href={searchResult.pdf_summary_url}
+                    download
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Download className="h-4 w-4 text-blue-600" />
+                      <span className="text-blue-700">Summary Report (PDF)</span>
+                    </div>
+                  </a>
+                </div>
+              )}
+
+              {/* Download All Documents */}
+              {searchResult.download_all_url && (
+                <div className="mb-3">
+                  <a
+                    href={searchResult.download_all_url}
+                    className="w-full flex items-center justify-between px-3 py-2 text-sm bg-green-50 border border-green-200 rounded-md hover:bg-green-100 transition-colors"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Archive className="h-4 w-4 text-green-600" />
+                      <span className="text-green-700">All Documents (ZIP)</span>
+                    </div>
+                  </a>
+                </div>
+              )}
+
+              {/* Downloaded Files List */}
+              {searchResult.downloaded_files && searchResult.downloaded_files.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-2">
+                    Downloaded {searchResult.downloaded_files.length} documents
+                  </p>
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {searchResult.downloaded_files.map((file, index) => (
+                      <div key={index} className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                        <div className="font-medium">{file.source}</div>
+                        <div className="text-gray-500">{file.download_date}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

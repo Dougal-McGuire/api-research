@@ -23,3 +23,14 @@ body {
     @apply bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-6;
   }
 }
+
+/* Fix for overflowing content */
+.overflow-auto {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Ensure proper word wrapping */
+.break-all {
+  word-break: break-word;
+}

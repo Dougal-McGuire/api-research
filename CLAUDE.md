@@ -145,3 +145,7 @@ The commit message format:
 - Without name: `checkpoint: {timestamp}`
 
 Example: `/cp api-refactor` creates commit "checkpoint: api-refactor"
+
+## Development Environment Restart Triggers
+
+- When the file `/home/wrichter/projects/api-research/app/core/research_prompt_template.txt` changes, restart dev

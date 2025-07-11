@@ -1,0 +1,25 @@
+Search comprehensively for {substance_name} regulatory information from these four mandatory sources:
+
+1. EPAR (European Public Assessment Reports): https://www.ema.europa.eu/en/search?f%5B0%5D=ema_medicine_bundle%3Aema_medicine&f%5B1%5D=ema_search_categories%3A83
+2. EMA-PSBG (Product-Specific Bioequivalence Guidance): https://www.ema.europa.eu/en/human-regulatory-overview/research-development/scientific-guidelines/clinical-pharmacology-pharmacokinetics/product-specific-bioequivalence-guidance
+3. FDA-Approvals: https://www.accessdata.fda.gov/scripts/cder/daf/
+4. FDA-PSBG: https://www.accessdata.fda.gov/scripts/cder/psg/index.cfm
+
+CRITICAL REQUIREMENTS - YOU MUST INCLUDE ALL OF THE FOLLOWING:
+
+1. All relevant regulatory documents found (with direct PDF links when available)
+2. Comprehensive approval status and dates from EMA and FDA
+3. Key regulatory information about the substance
+4. EMA-PSBG bioequivalence guidance documents - IMPORTANT: The EMA-PSBG page contains a list of over 50 substances with specific bioequivalence guidance. Look for "{substance_name}" in both "Draft guidelines under consultation" and "Finalised guidelines" sections. If found, provide the direct PDF link.
+
+SPECIAL INSTRUCTIONS FOR EMA-PSBG:
+- The EMA-PSBG page has alphabetically organized guidance documents
+- Search for exact matches and similar names (e.g., "{substance_name}" might be listed under generic or brand names)
+- If no specific guidance is found, explicitly state "No product-specific bioequivalence guidance found for {substance_name}"
+- Include any related substances or similar chemical entities that have guidance
+
+FORMAT REQUIREMENTS:
+- Use clear sections for each source (EPAR, EMA-PSBG, FDA-Approvals, FDA-PSBG)
+- Include ALL source URLs for verification
+- For clinical trials: Provide NCT numbers, study phases, primary endpoints, and outcomes
+- For EMA-PSBG: If guidance found, provide direct PDF link; if not found, state explicitly
