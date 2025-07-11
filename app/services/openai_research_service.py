@@ -33,7 +33,7 @@ class OpenAIResearchService:
             logger.error(f"❌ Error loading template: {e}")
             raise
     
-    async def research_substance(self, substance_name: str, debug: bool = True, model: str = "gpt-4") -> Dict:
+    async def research_substance(self, substance_name: str, debug: bool = True, model: str = "o1") -> Dict:
         """
         Research a pharmaceutical substance using OpenAI's web search capabilities
         """
