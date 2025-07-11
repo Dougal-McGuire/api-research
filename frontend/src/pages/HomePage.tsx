@@ -347,7 +347,34 @@ const HomePage: React.FC = () => {
       } catch (err: any) {
         clearInterval(statusInterval)
         setStatusMessage('')
-        setError(err.response?.data?.detail || 'Search failed. Please try again.')
+        
+        // Handle different error response formats
+        let errorMessage = 'Search failed. Please try again.'
+        let debugInfo = null
+        
+        if (err.response?.data) {
+          if (typeof err.response.data.detail === 'string') {
+            errorMessage = err.response.data.detail
+          } else if (typeof err.response.data.detail === 'object') {
+            errorMessage = err.response.data.detail.error || 'Search failed. Please try again.'
+            debugInfo = err.response.data.detail.debug_info
+          }
+        }
+        
+        setError(errorMessage)
+        
+        // Console log for debugging
+        console.error('Search error:', err.response?.data)
+        
+        // Set debug info if available
+        if (debugInfo && debugMode) {
+          setSearchResult({
+            status: 'error',
+            substance: searchQuery,
+            message: errorMessage,
+            debug_info: debugInfo
+          })
+        }
       } finally {
         setIsLoading(false)
         setTimeout(() => setStatusMessage(''), 2000) // Clear success message after 2 seconds
