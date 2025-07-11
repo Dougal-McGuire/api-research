@@ -30,10 +30,6 @@ async def health():
 # Serve frontend index.html for all non-API routes (SPA routing)
 @app.get("/{full_path:path}")
 async def serve_frontend(full_path: str):
-    # If it's an API route, let FastAPI handle it
-    if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("redoc") or full_path.startswith("openapi.json"):
-        return {"message": "API route not found"}
-    
     # Check if the file exists in static directory
     file_path = os.path.join("static", full_path)
     if os.path.exists(file_path) and os.path.isfile(file_path):
