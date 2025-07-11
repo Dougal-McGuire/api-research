@@ -32,6 +32,27 @@ async def get_research_service():
         research_service = OpenAIResearchService()
     return research_service
 
+@router.get("/health")
+async def health_check():
+    """
+    Health check endpoint to diagnose production issues
+    """
+    import os
+    import sys
+    
+    health_info = {
+        "status": "healthy",
+        "python_version": sys.version,
+        "working_directory": os.getcwd(),
+        "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY")),
+        "template_file_exists": os.path.exists("app/core/research_prompt_template.txt"),
+        "template_file_path": os.path.abspath("app/core/research_prompt_template.txt"),
+        "app_directory_contents": os.listdir("app") if os.path.exists("app") else "app directory not found",
+        "core_directory_contents": os.listdir("app/core") if os.path.exists("app/core") else "app/core directory not found"
+    }
+    
+    return health_info
+
 @router.post("/search")
 async def search_pharmaceutical_documents(request: SearchRequest):
     """
@@ -48,8 +69,17 @@ async def search_pharmaceutical_documents(request: SearchRequest):
         return result
         
     except Exception as e:
-        logger.error(f"Error in research endpoint: {e}")
-        raise HTTPException(status_code=500, detail=f"Research failed: {str(e)}")
+        logger.error(f"Error in research endpoint: {e}", exc_info=True)
+        error_detail = {
+            "error": str(e),
+            "error_type": type(e).__name__,
+            "debug_info": {
+                "working_directory": os.getcwd(),
+                "template_file_exists": os.path.exists("app/core/research_prompt_template.txt"),
+                "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY"))
+            }
+        }
+        raise HTTPException(status_code=500, detail=error_detail)
 
 @router.get("/{api_slug}/files", response_model=FilesListResponse)
 async def get_api_files(api_slug: str):
