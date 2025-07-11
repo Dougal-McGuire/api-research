@@ -133,17 +133,17 @@ const HomePage: React.FC = () => {
     
     return processedLines.map((item, itemIndex) => {
       if (item.type === 'table') {
-        return renderTable(item.content, itemIndex);
+        return renderTable(item.content as string[], itemIndex);
       }
       
-      const line = item.content;
+      const line = item.content as string;
       const lineIndex = itemIndex;
       
       // Check if line contains URLs
       const urlRegex = /(https?:\/\/[^\s\n\r\t<>()]+)/g;
       const parts = line.split(urlRegex);
       
-      const processedLine = parts.map((part, partIndex) => {
+      const processedLine = parts.map((part: string, partIndex: number) => {
         if (part.match(urlRegex)) {
           // Clean URL more thoroughly
           let cleanUrl = part;
@@ -169,12 +169,12 @@ const HomePage: React.FC = () => {
         let processedPart = part;
         
         // Bold text
-        processedPart = processedPart.replace(/\*\*([^*]+)\*\*/g, (match, p1) => {
+        processedPart = processedPart.replace(/\*\*([^*]+)\*\*/g, (_match: string, p1: string) => {
           return `<strong class="font-semibold">${p1}</strong>`;
         });
         
         // Italic text
-        processedPart = processedPart.replace(/\*([^*]+)\*/g, (match, p1) => {
+        processedPart = processedPart.replace(/\*([^*]+)\*/g, (_match: string, p1: string) => {
           return `<em class="italic">${p1}</em>`;
         });
         
@@ -190,7 +190,7 @@ const HomePage: React.FC = () => {
       if (line.trim().startsWith('•') || line.trim().startsWith('–')) {
         // Remove duplicate bullet points that might appear
         const cleanLine = line.replace(/^[\s]*[•–]+[\s]*[•–]+[\s]*/, '• ');
-        const cleanProcessedLine = cleanLine.split(urlRegex).map((part, partIndex) => {
+        const cleanProcessedLine = cleanLine.split(urlRegex).map((part: string, partIndex: number) => {
           if (part.match(urlRegex)) {
             let cleanUrl = part.replace(/[.,;:!?)]+$/, '').replace(/\)+$/, '');
             return (
@@ -231,7 +231,7 @@ const HomePage: React.FC = () => {
         return <br key={lineIndex} />;
       } else if (line.trim().match(/^#{1,6}\s/)) {
         // Handle markdown headers
-        const headerLevel = line.match(/^(#{1,6})\s/)[1].length;
+        const headerLevel = line.match(/^(#{1,6})\s/)?.[1]?.length || 1;
         const headerText = line.replace(/^#{1,6}\s/, '');
         const HeaderTag = `h${Math.min(headerLevel + 1, 6)}` as any;
         return (
