@@ -29,7 +29,23 @@ research_service = None
 async def get_research_service():
     global research_service
     if research_service is None:
-        research_service = OpenAIResearchService()
+        try:
+            research_service = OpenAIResearchService()
+        except Exception as e:
+            logger.error(f"Failed to initialize OpenAIResearchService: {e}", exc_info=True)
+            raise HTTPException(
+                status_code=500, 
+                detail={
+                    "error": f"Service initialization failed: {str(e)}",
+                    "error_type": type(e).__name__,
+                    "debug_info": {
+                        "working_directory": os.getcwd(),
+                        "template_file_exists": os.path.exists("app/core/research_prompt_template.txt"),
+                        "openai_api_key_set": bool(os.getenv("OPENAI_API_KEY")),
+                        "template_file_path": os.path.abspath("app/core/research_prompt_template.txt") if os.path.exists("app/core/research_prompt_template.txt") else "File not found"
+                    }
+                }
+            )
     return research_service
 
 @router.get("/health")
@@ -50,6 +66,15 @@ async def health_check():
         "app_directory_contents": os.listdir("app") if os.path.exists("app") else "app directory not found",
         "core_directory_contents": os.listdir("app/core") if os.path.exists("app/core") else "app/core directory not found"
     }
+    
+    # Try to initialize the service to see what fails
+    try:
+        service = OpenAIResearchService()
+        health_info["service_initialization"] = "success"
+    except Exception as e:
+        health_info["service_initialization"] = "failed"
+        health_info["service_error"] = str(e)
+        health_info["service_error_type"] = type(e).__name__
     
     return health_info
 
